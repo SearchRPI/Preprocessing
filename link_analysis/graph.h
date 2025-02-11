@@ -2,47 +2,69 @@
 #include <unordered_map>
 #include <unordered_set>
 
-#include "edge.h"
-#include "node.h"
-
 class Graph {
 public:
   Graph();
 
   /**
-   * @brief Adds an edge to the graph
+   * @brief Returns the total number of nodes in the graph
    *
-   * @param from The node that is the start of the edge.
-   * @param to The node that is end of the edge.
-   * @param edgeName The edge name of the edge between the two nodes. This is
-   * the URL
+   * @return The total number of nodes inside of the graph
    */
-  void addEdge(Node from, Node to, std::string edgeName);
+  int numberOfNodes() { return nodes.size(); }
 
   /**
-   * @brief Adds a node into the graph
+   * @brief Gets the pagerank value of a specific node (document)
    *
-   * @param node The node that is being added to the graph
+   * @param url The document/page that we want to look at
+   * @return The page rank value (double) of the node/document
    */
-  void addNode(Node node);
+  double nodeVal(std::string url) { return nodes[url]; }
+
+  void setNode(std::string url, double val) { nodes[url] = val; }
+
+  void setEdge(std::string src, std::string dst, std::string url) {
+    edges[src][dst] = url;
+  }
 
   /**
-   * @brief Returns whether the given node is inside of the graph
+   * @brief Returns the link URL that connects the two nodes/documents
    *
-   * @param node The node that we are searching for in the graph
-   * @return Whether the node is in the egraph
+   * @param source The starting node that we started at
+   * @param destination The ending node that is connected by the starting node
+   * @return The URL link that connects to the source and destination node.
    */
-  bool checkNodeInGraph(Node node);
+  std::string edgeLink(std::string source, std::string destination) {
+    return edges[source][destination];
+  }
 
   /**
    * @brief Returns the total number of edges in the graph.
    *
    * @return The total number of edges in the graph.
    */
-  int getNumEdges();
+  int numberofEdges() { return numberOfEdges; };
+
+  /**
+   * @brief Clears the graph, resets/clear the values of the graph.
+   */
+  void clear();
+
+  /**
+   * @brief Reads from a file that will be used to create the graph
+   */
+  void readFromFile();
 
 private:
-  std::unordered_map<std::string, std::unordered_set<Edge>> graph;
-  std::unordered_set<Node, Node::NodeHash> nodes;
-  std::unordered_set<Edge, Edge::EdgeHash> edges;
+  /**
+   * key: source node
+   * value: key-value
+   *    key: destination
+   *    value: url that connects the source and destination
+   */
+  std::unordered_map<std::string, std::unordered_map<std::string, std::string>>
+      edges{};
+
+  std::unordered_map<std::string, double> nodes{};
+  int numberOfEdges;
 };
