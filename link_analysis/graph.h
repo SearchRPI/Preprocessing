@@ -21,11 +21,41 @@ public:
    */
   double nodeVal(std::string url) { return nodes[url]; }
 
+  /**
+   * @brief Determines whether node is in the graph
+   *
+   * @param url The node that we want to look for
+   * @return Whether the node exists in the graph
+   */
+  bool nodeInGraph(std::string url) { return nodes.find(url) != nodes.end(); }
+
+  /**
+   * @brief Determines whether edge is in the graph
+   *
+   * @param edgeName The edge that we want to look for
+   * @return Whether the edge exists in the graph
+   */
+  bool edgesInGraph(std::string edgeName) {
+    return edges.find(edgeName) != edges.end();
+  }
+
+  /**
+   * @brief Set a node's page rank value.
+   *
+   * @param url The node we want to set the value to
+   * @param val The value of the node that we want it to have
+   */
   void setNode(std::string url, double val) { nodes[url] = val; }
 
-  void setEdge(std::string src, std::string dst, std::string url) {
-    edges[src][dst] = url;
-  }
+  /**
+   * @brief Set and add edge to the graph
+   *
+   * @param src The source node
+   * @param dst The destination node
+   * @param url The URL that links the two nodes together
+   * @return Whether setting of the edge is successful
+   */
+  bool setEdge(std::string src, std::string dst, std::string url);
 
   /**
    * @brief Returns the link URL that connects the two nodes/documents
@@ -43,17 +73,24 @@ public:
    *
    * @return The total number of edges in the graph.
    */
-  int numberofEdges() { return numberOfEdges; };
+  int numberOfEdges() { return numEdges; };
 
   /**
    * @brief Clears the graph, resets/clear the values of the graph.
    */
   void clear();
 
+  std::unordered_map<std::string, std::unordered_map<std::string, std::string>>
+  getEdges() {
+    return edges;
+  }
+
+  std::unordered_map<std::string, double> getNodes() { return nodes; }
+
   /**
    * @brief Reads from a file that will be used to create the graph
    */
-  void readFromFile();
+  void readFromFile(std::string fileName);
 
 private:
   /**
@@ -66,5 +103,5 @@ private:
       edges{};
 
   std::unordered_map<std::string, double> nodes{};
-  int numberOfEdges;
+  int numEdges;
 };

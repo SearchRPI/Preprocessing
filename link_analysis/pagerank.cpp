@@ -1,4 +1,0 @@
-class PageRank {
-public:
-private:
-};
