@@ -17,7 +17,7 @@ Let $F_{u}$ be the set (unique) of pages u points to. We can consider this to be
 
 Let $B_{u}$ be the set (unique) of pages that point to u. We can consider this to be the end node.
 
-Let $N_{u}$ = |$F_{u}$| be the number of links from u. We can consider this the number of links/edges coming out from web page/node u. That is, $N_{u}$ is the number of forward links.
+Let $N_{u}$ = $|F_{u}|$ be the number of links from u. We can consider this the number of links/edges coming out from web page/node u. That is, $N_{u}$ is the number of forward links.
 
 Let **c** be a factor used for normalization. 
 
@@ -45,14 +45,14 @@ while $\delta > \epsilon$:
 
 $R_{i+1} \leftarrow AR_{i}$
 
-$d \leftarrow ||R_{i}||_{1} - ||R_{i+1}||_{1}$
+$d \leftarrow ||R_{i}||\_{1} - ||R_{i+1}||_{1}$
 
 $R_{i+1} \leftarrow R_{i+1} + dE$
 
-$\delta \leftarrow ||R_{i+1} - R_{i}||_{1}$
+$\delta \leftarrow ||R_{i+1}$ - $R_{i}||_{1}$
 
 end loop
 
 There is still an issue with this approach with **dangling links**. **Dangling links** are links that point to any page with no outgoing links, that is, these links are the last link for the web page that it is point to. This is an issue because it is unknown where their weight (**PageRank**) should be distributed. 
 
-They can be removed from the system and added back at the end when all **PageRanks** have been calculated.
+One solution can be that the dangling node/link can be removed from the system and then added back at the end when all **PageRanks** have been calculated.
