@@ -1,12 +1,14 @@
-#include "graph.h"
-#include <string>
+#ifndef PAGERANK_H
+#define PAGERANK_H
+
+#include "graph.h" // Include your Graph header file
+#include <cmath>
+#include <iostream>
+#include <unordered_map>
 
 class PageRank {
 public:
-  void initGraph(std::string fileName);
-
-  Graph getGraph() { return graph; }
-
-private:
-  Graph graph;
+  void computePageRank(Graph &graph, double damping, double tol, int maxIter);
 };
+
+#endif

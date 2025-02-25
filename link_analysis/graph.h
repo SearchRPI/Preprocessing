@@ -1,3 +1,6 @@
+#ifndef GRAPH_H
+#define GRAPH_H
+
 #include <string>
 #include <unordered_map>
 #include <unordered_set>
@@ -105,3 +108,5 @@ private:
   std::unordered_map<std::string, double> nodes{};
   int numEdges;
 };
+
+#endif
