@@ -1,0 +1,10 @@
+#!/bin/sh
+
+g++ *.cpp *.h
+
+# Run code
+./a.out
+
+# Clean up
+rm a.out
+rm *.gch
