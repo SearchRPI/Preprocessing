@@ -1,108 +1,106 @@
+// pagerank_custom.cpp
 #include "pagerank.h"
+#include <cmath>
 
-// Compute PageRank using iterative method.
+// Helper function to compute the L1 norm of a vector.
+double l1norm(const std::unordered_map<std::string, double> &vec) {
+  double norm = 0.0;
+  for (auto const &p : vec) {
+    norm += fabs(p.second);
+  }
+  return norm;
+}
+
+// Multiply the “matrix” A (encoded in the Graph edges) by vector R.
+// Here, A is defined so that for each node v, each outgoing link from v
+// distributes R(v) evenly.
+std::unordered_map<std::string, double>
+multiplyA(Graph &graph, const std::unordered_map<std::string, double> &R) {
+  std::unordered_map<std::string, double> result;
+  // Initialize result for each node.
+  auto nodes = graph.getNodes();
+  for (auto const &p : nodes) {
+    result[p.first] = 0.0;
+  }
+  // Get the edge map (source -> {destination -> link})
+  auto edges = graph.getEdges();
+  // Distribute rank for each node v along its outgoing links.
+  for (auto const &p : R) {
+    const std::string &v = p.first;
+    double rank_v = p.second;
+    // Find the outdegree (number of links) for node v.
+    double outdeg = 0.0;
+    if (edges.find(v) != edges.end())
+      outdeg = edges.at(v).size();
+    if (outdeg > 0) {
+      double distributed = rank_v / outdeg;
+      for (auto const &dst : edges.at(v)) {
+        const std::string &u = dst.first;
+        result[u] += distributed;
+      }
+    }
+  }
+  return result;
+}
+
+// Compute PageRank exactly as described in the algorithm documentation.
 void PageRank::computePageRank(Graph &graph, double d = 0.85, double tol = 1e-6,
-                               int max_iter = 100) {
-  // Get nodes from the graph. The keys of the nodes map are the page URLs.
-  std::unordered_map<std::string, double> rank = graph.getNodes();
-
-  // Ensure that every node has an initial rank (if not already set by graph)
+                               int max_iter = 1000) {
+  // Let S be any starting vector over pages.
+  // Here, we choose S = uniform distribution.
   int N = graph.numberOfNodes();
   if (N == 0)
     return;
 
-  // Set the initial rank of the nodes (We need a starting point)
-  double initial_rank = 1.0 / N;
-  for (auto &pair : rank) {
-    pair.second = initial_rank;
+  // Initialize S and E as uniform.
+  std::unordered_map<std::string, double> R; // R0
+  std::unordered_map<std::string, double> E;
+  double uniform_val = 1.0 / N;
+  auto nodes = graph.getNodes();
+  for (const auto &p : nodes) {
+    R[p.first] = uniform_val;
+    E[p.first] = uniform_val;
   }
 
-  // Get the edge structure. Our graph structure is defined as:
-  // edges: key (source) -> unordered_map (destination -> link URL)
-  std::unordered_map<std::string, std::unordered_map<std::string, std::string>>
-      edges = graph.getEdges();
-
-  // Precompute outdegree for each node.
-  std::unordered_map<std::string, int> outDegree;
-
-  // TODO: May not be correct as not entirely sure if we remove it and then add
-  // it back or not.
-  // Some nodes might not have
-  // any outgoing edges. For those we'll have outDegree 0.
-  for (auto const &nodePair : rank) {
-    std::string node = nodePair.first;
-    // If the node is in the edges map, then count its outgoing links
-    if (edges.find(node) != edges.end()) {
-      outDegree[node] = edges[node].size();
-    } else {
-      outDegree[node] = 0;
-    }
-  }
-
-  // Iterative update of page ranks
-  std::unordered_map<std::string, double> newRank;
   int iter = 0;
-  while (iter < max_iter) {
-    // Initialize newRank to 0 for each node.
-    for (auto const &p : rank) {
-      newRank[p.first] = 0.0;
+  double diff = std::numeric_limits<double>::max();
+
+  // TODO: Does not deal with dangling links
+  while (diff > tol && iter < max_iter) {
+    // Step 1: R_next = A * R.
+    std::unordered_map<std::string, double> R_next = multiplyA(graph, R);
+
+    // Step 2: Compute d = ||R||₁ − ||R_next||₁.
+    double norm_R = l1norm(R);
+    double norm_R_next = l1norm(R_next);
+    double delta_mass = norm_R - norm_R_next;
+
+    // Step 3: Add d * E to R_next.
+    for (auto &p : R_next) {
+      p.second += delta_mass * E[p.first];
     }
 
-    // Compute the dangling mass (rank lost to pages with no outlinks, to be
-    // redistributed uniformly)
-    double dangling_mass = 0.0;
-    for (auto const &p : rank) {
-      if (outDegree[p.first] == 0) {
-        dangling_mass += p.second;
-      }
+    // Step 4: Compute convergence difference δ = ||R_next − R||₁.
+    diff = 0.0;
+    for (const auto &p : R) {
+      diff += fabs(R_next[p.first] - p.second);
     }
 
-    // For each node v, distribute its PageRank among all its outgoing links.
-    // We are essentially computing: for each u, add p[v]/L(v) for every link
-    // from v to u.
-    for (auto const &p : rank) {
-      std::string v = p.first;
-      double curRank = p.second;
-      // If v has outgoing edges, distribute its rank evenly
-      if (outDegree[v] > 0) {
-        double distributed = curRank / outDegree[v];
-        // For every destination from v, add to that destination’s new rank
-        for (auto const &dstPair : edges[v]) {
-          std::string u = dstPair.first;
-          newRank[u] += distributed;
-        }
-      }
-    }
-
-    // Now compute the new page rank for each page using the formula:
-    // newRank(u) = d * (newRank(u) + (dangling_mass / N)) + (1 - d) / N
-    double diff = 0.0; // Total difference between iterations for convergence.
-    for (auto &p : newRank) {
-      double oldRank = rank[p.first];
-      p.second = d * (p.second + (dangling_mass / N)) + (1.0 - d) / N;
-      diff += fabs(p.second - oldRank);
-    }
-
-    // Check convergence: if total difference is below tolerance, we are done.
-    if (diff < tol) {
-      break;
-    }
-
-    // Prepare rank for next iteration
-    rank = newRank;
+    // Update for the next iteration.
+    R = R_next;
     iter++;
   }
 
-  // Finally, update the graph's node values with the final PageRank values.
-  for (auto const &p : rank) {
+  // Update the graph with computed PageRank values.
+  for (const auto &p : R) {
     graph.setNode(p.first, p.second);
   }
 
-  std::cout << "PageRank converged after " << iter << " iterations."
-            << std::endl;
+  std::cout << "PageRank converged after " << iter << " iterations with diff "
+            << diff << std::endl;
 
-  // Optional: output the computed PageRank for each node.
-  for (auto const &p : rank) {
+  // Optionally print the PageRank for each node.
+  for (const auto &p : R) {
     std::cout << "Node: " << p.first << " PageRank: " << p.second << std::endl;
   }
 }
