@@ -1,4 +1,4 @@
-#include "graph.h"
+#include "../includes/graph.h"
 
 void Graph::clear() {
   numEdges = 0;
