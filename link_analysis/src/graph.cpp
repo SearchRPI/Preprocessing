@@ -1,25 +1,19 @@
 #include "../includes/graph.h"
 
-void Graph::clear() {
-  numEdges = 0;
-  edges.clear();
-  nodes.clear();
-}
+void Graph::clear() {}
 
-Graph::Graph() {
-  edges = {};
-  nodes = {};
-  numEdges = 0;
-}
+Graph::Graph() {}
 
 void Graph::readFromFile(std::string fileName) {}
 
-bool Graph::setEdge(std::string src, std::string dst, std::string url) {
-  bool inGraph = nodeInGraph(src) && nodeInGraph(dst);
-  if (inGraph) {
-    edges[src][dst] = url;
-    numEdges++;
-    return true;
+void Graph::addNode(std::string node) {
+  nodes.insert(node);
+  adjacencyList[node] = {};
+}
+
+void Graph::addEdge(std::string source, std::string destination) {
+  if (nodes.find(source) != nodes.end() &&
+      nodes.find(destination) != nodes.end()) {
+    adjacencyList[source].push_back(destination);
   }
-  return false;
 }

@@ -8,7 +8,7 @@
 
 class PageRank {
 public:
-  void computePageRank(Graph &graph, double d, double tol, int maxIter);
+  void computePageRank(Graph &graph, double alpha, double epsilon, int maxIter);
 };
 
 #endif
