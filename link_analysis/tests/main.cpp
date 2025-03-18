@@ -2,11 +2,36 @@
 #include "../includes/pagerank.h"
 #include <csignal>
 #include <iostream>
+#include <map>
 
 using namespace std;
 
+// A helper function to compare two maps (expected vs computed)
+// with a tolerance for floating-point differences.
+bool compareMaps(const map<int, double> &expected,
+                 const map<int, double> &computed, double tol = 1e-6) {
+  if (expected.size() != computed.size())
+    return false;
+  for (auto &kv : expected) {
+    int node = kv.first;
+    double vexp = kv.second;
+    double vcomp = computed.at(node);
+    if (fabs(vexp - vcomp) > tol) {
+      return false;
+    }
+  }
+  return true;
+}
+
 int main() {
+  /**
+   *
+   * NetworkX Test Case
+   *
+   */
   Graph graph;
+
+  std::cout << "Testing NetworkX Test Case\n\n\n\n";
 
   // Create nodes
   graph.addNode("1");
@@ -28,11 +53,17 @@ int main() {
   graph.addEdge("5", "6");
   graph.addEdge("6", "4");
 
+  /**
+   *
+   * Simple
+   *
+   */
+
   // Calculate PageRank
   PageRank pagerank;
-  pagerank.computePageRank(graph, 0.85, 1e-8, 100);
+  pagerank.computePageRank(graph, 0.85, 1e-6, 100);
 
-  std::cout << "\n\n\n\n\n\n";
+  std::cout << "\n\n\n\n\nTesting Simple\n";
 
   Graph graph2;
 
@@ -47,119 +78,35 @@ int main() {
   graph2.addEdge("3", "1");
 
   PageRank pagerank1;
-  pagerank1.computePageRank(graph2, .85, 1e-8, 100);
+  pagerank1.computePageRank(graph2, .85, 1e-6, 100);
+
+  /**
+   *
+   *  NetworkX Dangling Test Case
+   *
+   */
+
+  std::cout << "\n\nTesting NetworkX Test Case For Dangling\n\n";
+
+  Graph graph3;
+
+  // Create nodes
+  graph3.addNode("1");
+  graph3.addNode("2");
+  graph3.addNode("3");
+  graph3.addNode("4");
+  graph3.addNode("5");
+  graph3.addNode("6");
+
+  // Create edges
+  graph3.addEdge("1", "2");
+  graph3.addEdge("2", "3");
+
+  // Calculate PageRank
+  PageRank pagerank3;
+  pagerank3.computePageRank(graph3, 0.85, 1e-6, 100);
+
+  std::cout << "\n\nTesting Dangling\n\n";
 
   return 0;
 }
-
-//
-// void separator() {
-//   std::cout << "=----------------------------------="
-//                "\n\n\n\n\n\n\n\n\n\n\n\n";
-//
-//   std::cout << "=----------------------------------=";
-// }
-//
-// void testFigure3() {
-//   Graph graph;
-//   cout << "Figure 3" << endl;
-//
-//   graph.addNode("A", 0.0);
-//   graph.addNode("B", 0.0);
-//   graph.addNode("C", 0.0);
-//
-//   graph.setEdge("A", "B", "http://link_from_A_to_B");
-//   graph.setEdge("A", "C", "http://link_from_A_to_C");
-//   graph.setEdge("B", "C", "http://link_from_B_to_C");
-//   graph.setEdge("C", "A", "http://link_from_C_to_A");
-//
-//   // Now compute PageRank.
-//   PageRank pagerank;
-//   pagerank.computePageRank(graph, 0.85, 1e-6, 100);
-// }
-//
-// /**
-//  * @brief Tests whether there are no infinite sinks. It will converge
-//  eventually
-//  * and should not infinite loop to figure out the page rank of "A"
-//  */
-// void testFigure4() {
-//   Graph graph;
-//   cout << "Figure 4" << endl;
-//
-//   graph.addNode("A", 0.0); // Top left
-//   graph.addNode("B", 0.0); // Bottom left
-//   graph.addNode("C", 0.0); // Top right
-//
-//   graph.setEdge("A", "B", "http://link_from_A_to_B");
-//   graph.setEdge("B", "C", "http://link_from_B_to_C");
-//   graph.setEdge("C", "A", "http://link_from_C_to_A");
-//
-//   // Now compute PageRank.
-//   PageRank pagerank;
-//   pagerank.computePageRank(graph, 0.85, 1e-6, 100);
-// }
-//
-// /**
-//  * @brief Tests whether pagerank counts for dangling pages (i.e. no out
-//  links)
-//  */
-// void testDangling() {
-//   Graph graph;
-//   cout << "Dangling" << endl;
-//
-//   graph.addNode("A", 0.0); // Top left
-//   graph.addNode("B", 0.0); // Bottom left
-//   graph.addNode("C", 0.0); // Top right
-//
-//   graph.setEdge("A", "B", "http://link_from_A_to_B");
-//   graph.setEdge("B", "C", "http://link_from_B_to_C");
-//
-//   // Now compute PageRank.
-//   PageRank pagerank;
-//   pagerank.computePageRank(graph, 0.85, 1e-6, 100);
-// }
-//
-// void testNetworkxTestCase() {
-//   Graph graph;
-//
-//   graph.addNode("1", 0.0);
-//   graph.addNode("2", 0.0);
-//   graph.addNode("3", 0.0);
-//   graph.addNode("4", 0.0);
-//   graph.addNode("5", 0.0);
-//   graph.addNode("6", 0.0);
-//
-//   // No need for edge name
-//   graph.setEdge("1", "2", "");
-//   graph.setEdge("1", "3", "");
-//   graph.setEdge("3", "1", "");
-//   graph.setEdge("3", "2", "");
-//   graph.setEdge("3", "5", "");
-//   graph.setEdge("4", "5", "");
-//   graph.setEdge("4", "6", "");
-//   graph.setEdge("5", "4", "");
-//   graph.setEdge("5", "6", "");
-//   graph.setEdge("6", "4", "");
-//
-//   PageRank pagerank;
-//   pagerank.computePageRank(graph, 0.90, 1e-8, 100);
-// }
-//
-// int main() {
-//   testFigure3();
-//
-//   separator();
-//
-//   testFigure4();
-//
-//   separator();
-//
-//   testDangling();
-//
-//   separator();
-//
-//   testNetworkxTestCase();
-//
-//   return 0;
-// }
