@@ -106,7 +106,5 @@ int main() {
   PageRank pagerank3;
   pagerank3.computePageRank(graph3, 0.85, 1e-6, 100);
 
-  std::cout << "\n\nTesting Dangling\n\n";
-
   return 0;
 }
