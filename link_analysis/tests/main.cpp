@@ -28,6 +28,8 @@ int main() {
    *
    * NetworkX Test Case
    *
+   * RESULT: PASSES (+- 0.03)
+   *
    */
   Graph graph;
 
@@ -57,6 +59,8 @@ int main() {
    *
    * Simple
    *
+   * RESULT: PASSESS(+- 0.1)
+   *
    */
 
   // Calculate PageRank
@@ -84,6 +88,14 @@ int main() {
    *
    *  NetworkX Dangling Test Case
    *
+   *  RESULT: FAILS
+   *    - It may be due to how dangling is done. It seems that they had done
+   * page ranks separate from dangling page rank. It also doesn't look like they
+   * remove the danling nodes and add them back later or they don't converge
+   * when it sees a dangling. When there is a dangling node, this implementation
+   * will leave it alone and move on to other outward edges. We can consider it
+   * as "done".
+   *
    */
 
   std::cout << "\n\nTesting NetworkX Test Case For Dangling\n\n";
@@ -106,5 +118,49 @@ int main() {
   PageRank pagerank3;
   pagerank3.computePageRank(graph3, 0.85, 1e-6, 100);
 
+  /**
+   *
+   * ChatGPT Created Test Cases
+   *
+   * RESULT: PASSESS (+- 0.03)
+   *
+   */
+
+  std::cout << "\n\nTesting ChatGPT Created Regular Test Case\n\n";
+
+  Graph graph4;
+
+  graph4.addNode("A");
+  graph4.addNode("B");
+  graph4.addNode("C");
+
+  graph4.addEdge("A", "B");
+  graph4.addEdge("B", "C");
+  graph4.addEdge("C", "A");
+
+  PageRank pagerank4;
+
+  pagerank4.computePageRank(graph4, 0.85, 0.0001, 100);
+
+  /**
+   *
+   * RESULT: PASSESS (+- 0.03)
+   *
+   */
+  std::cout << "\n\nTesting ChatGPT Created Dangling Test Case\n\n";
+
+  Graph graph5;
+
+  graph5.addNode("A");
+  graph5.addNode("B");
+  graph5.addNode("C");
+
+  graph5.addEdge("A", "B");
+  graph5.addEdge("A", "C");
+  graph5.addEdge("B", "C");
+
+  PageRank pagerank5;
+
+  pagerank5.computePageRank(graph5, 0.85, 1e-5, 100);
   return 0;
 }

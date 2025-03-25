@@ -1,19 +1,20 @@
 #include "../includes/pagerank.h"
 
-void PageRank::computePageRank(Graph &graph, double c, double epsilon,
-                               int maxIterations) {
+std::unordered_map<std::string, double>
+PageRank::computePageRank(Graph &graph, double c, double epsilon,
+                          int maxIterations, double e) {
   // Retrieve nodes and the forward adjacency list.
   // -----------------------------------------------------------------------
-  // Step 0: Initialization
+  // Step 0: Initialization and setup
   // R0 ← S, where S is a uniform initial score.
   std::unordered_set<std::string> nodes = graph.getNodes();
   std::unordered_map<std::string, std::vector<std::string>> forwardAdj =
       graph.getAdjacencyList();
   int N = nodes.size();
 
-  // Return early if graph is empty.
+  // Return empty if graph is empty.
   if (N == 0) {
-    return;
+    return {};
   }
 
   // Create a vector to ensure consistent node ordering.
@@ -36,10 +37,10 @@ void PageRank::computePageRank(Graph &graph, double c, double epsilon,
     }
   }
 
-  // Define a teleportation (or personalization) vector E (uniform by default).
-  std::unordered_map<std::string, double> E;
-  for (const auto &node : nodeList) {
-    E[node] = 1.0 / N;
+  // Define a teleportation probability if user does not specified (uniform by
+  // default).
+  if (e == -1) {
+    e = 1.0 / N;
   }
 
   // Initialize PageRank vector R0 = S with a uniform distribution.
@@ -71,7 +72,7 @@ void PageRank::computePageRank(Graph &graph, double c, double epsilon,
       double sum = 0.0;
       for (const std::string &v : incoming[u]) {
         if (outDegree[v] > 0) {
-          sum += pageRank[v] / static_cast<double>(outDegree[v]);
+          sum += pageRank[v] / double(outDegree[v]);
         }
       }
       newPageRank[u] = c * sum;
@@ -82,7 +83,7 @@ void PageRank::computePageRank(Graph &graph, double c, double epsilon,
     // less than 1 due to dangling nodes or sinks. Compute the difference d
     // between 1.0 and the L1 norm of newPageRank.
     double totalMass = 0.0;
-    for (const auto &pair : newPageRank) {
+    for (const std::pair<const std::string, double> &pair : newPageRank) {
       totalMass += pair.second;
     }
     double d = 1.0 - totalMass;
@@ -91,7 +92,7 @@ void PageRank::computePageRank(Graph &graph, double c, double epsilon,
     // Add the missing mass d distributed according to the teleportation vector
     // E.
     for (const std::string &node : nodeList) {
-      newPageRank[node] += d * E[node];
+      newPageRank[node] += d * e;
     }
 
     // ---- Step 4: δ ← ||R(i+1) - R(i)||₁ ----
@@ -113,4 +114,6 @@ void PageRank::computePageRank(Graph &graph, double c, double epsilon,
               << std::endl;
   }
   std::cout << "\n";
+
+  return pageRank;
 }

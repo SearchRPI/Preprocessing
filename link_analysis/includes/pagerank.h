@@ -8,7 +8,28 @@
 
 class PageRank {
 public:
-  void computePageRank(Graph &graph, double alpha, double epsilon, int maxIter);
+  /**
+   * @brief Returns the page rank of the entire graph. That is, rank each page
+   * using a page rank algorithm.
+   *
+   * @param graph The graph that we want to calculate the page ranks of.
+   * @param c The normalization factor so that the total rank of all web pages
+   * is constant. It is used to calculate the value for R, the page rank for the
+   current page/node.
+   * @param epsilon The value used for the convergence threshold. It is also
+   used to determine when to stop iterating. Similar to the usage to the maxIter
+   value.
+   * @param maxIter The max iterations before we stop and converge. This is used
+   * to help prevent infinite loops from happening, typically graphs that has
+   * all nodes reach all other nodes.
+   * @param e A "teleportation" or randomness factor that can be specified by
+   * the user or uses the default value (1 / total number of nodes). It is the
+   * probability that a user might jump to a different page due to being in a
+   * infinite loop or are "stuck".
+   */
+  std::unordered_map<std::string, double>
+  computePageRank(Graph &graph, double c, double epsilon, int maxIter,
+                  double e = -1);
 };
 
 #endif
