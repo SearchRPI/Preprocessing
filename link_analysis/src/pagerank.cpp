@@ -1,12 +1,11 @@
 #include "../includes/pagerank.h"
 
-std::unordered_map<std::string, double>
-PageRank::computePageRank(Graph &graph, double c, double epsilon,
-                          int maxIterations, double e) {
+std::unordered_map<std::string, double> PageRank::computePageRank(
+    Graph &graph, double c, double epsilon, int maxIterations, double e,
+    const std::unordered_map<std::string, double> &initialPageRank) {
   // Retrieve nodes and the forward adjacency list.
   // -----------------------------------------------------------------------
   // Step 0: Initialization and setup
-  // R0 ← S, where S is a uniform initial score.
   std::unordered_set<std::string> nodes = graph.getNodes();
   std::unordered_map<std::string, std::vector<std::string>> forwardAdj =
       graph.getAdjacencyList();
@@ -37,73 +36,77 @@ PageRank::computePageRank(Graph &graph, double c, double epsilon,
     }
   }
 
-  // Define a teleportation probability if user does not specified (uniform by
+  // Define a teleportation probability if user does not specify one (uniform by
   // default).
   if (e == -1) {
     e = 1.0 / N;
   }
 
-  // Initialize PageRank vector R0 = S with a uniform distribution.
+  // Initialize PageRank vector.
   std::unordered_map<std::string, double> pageRank;
   std::unordered_map<std::string, double> newPageRank;
-  for (const std::string &node : nodeList) {
-    pageRank[node] = 1.0 / N;
-    newPageRank[node] = 0.0;
+  // If an initial PageRank was provided (from a previous computation), use it.
+  // Otherwise, initialize uniformly.
+  if (!initialPageRank.empty()) {
+    for (const std::string &node : nodeList) {
+      if (initialPageRank.find(node) != initialPageRank.end()) {
+        pageRank[node] = initialPageRank.at(node);
+      } else {
+        // In case a new node was added, initialize uniformly.
+        pageRank[node] = 1.0 / N;
+      }
+      newPageRank[node] = 0.0;
+    }
+  } else {
+    for (const std::string &node : nodeList) {
+      pageRank[node] = 1.0 / N;
+      newPageRank[node] = 0.0;
+    }
   }
 
   // delta will track the difference between successive iterations.
   double delta = std::numeric_limits<double>::max();
   int iteration = 0;
 
-  // Main iterative loop: while δ > ε: (until convergence)
-  // -----------------------------------------------------------------------
+  // Main iterative loop: while δ > ε and iterations remain.
   while (delta > epsilon && iteration < maxIterations) {
-    // ---- Step 1: R(i+1) ← A R(i)  ----
-    // Reset newPageRank to zero for the current iteration.
+    // ---- Step 1: Compute contributions to newPageRank ----
+    // Reset newPageRank for the current iteration.
     for (const std::string &node : nodeList) {
       newPageRank[node] = 0.0;
     }
 
-    // Compute newPageRank by multiplying the score vector with matrix A.
-    // For each node u, sum the contributions from all pages v ∈ B(u)
-    // where B(u) is the set of in-neighbors of u, and each contribution is
-    // R(i)(v)/N(v), only if v has outgoing links.
+    // For each node u, accumulate contributions from all in-neighbors.
     for (const std::string &u : nodeList) {
       double sum = 0.0;
       for (const std::string &v : incoming[u]) {
         if (outDegree[v] > 0) {
-          sum += pageRank[v] / double(outDegree[v]);
+          sum += pageRank[v] / static_cast<double>(outDegree[v]);
         }
       }
       newPageRank[u] = c * sum;
     }
 
-    // ---- Step 2: d ← ||R(i)||₁ - ||R(i+1)||₁ ----
-    // After applying matrix A, the total mass (L1 norm) of newPageRank can be
-    // less than 1 due to dangling nodes or sinks. Compute the difference d
-    // between 1.0 and the L1 norm of newPageRank.
+    // ---- Step 2: Adjust for dangling nodes ----
     double totalMass = 0.0;
-    for (const std::pair<const std::string, double> &pair : newPageRank) {
+    for (const auto &pair : newPageRank) {
       totalMass += pair.second;
     }
     double d = 1.0 - totalMass;
 
-    // ---- Step 3: R(i+1) ← R(i+1) + dE  ----
     // Add the missing mass d distributed according to the teleportation vector
     // E.
     for (const std::string &node : nodeList) {
       newPageRank[node] += d * e;
     }
 
-    // ---- Step 4: δ ← ||R(i+1) - R(i)||₁ ----
-    // Compute the L1 norm difference between the new PageRank scores and the
-    // previous scores.
+    // ---- Step 3: Check for convergence ----
     delta = 0.0;
     for (const std::string &node : nodeList) {
       delta += fabs(newPageRank[node] - pageRank[node]);
     }
 
-    // Update R(i) for the next iteration.
+    // Update pageRank for the next iteration.
     pageRank = newPageRank;
     iteration++;
   }
