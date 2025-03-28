@@ -1,0 +1,10 @@
+#!/bin/sh
+
+g++ ./src/*.cpp ./includes/*.h ./tests/main.cpp
+
+# Run code
+./a.out
+
+# Clean up the binary and the .gch files created from header files
+rm a.out
+rm ./includes/*.gch
