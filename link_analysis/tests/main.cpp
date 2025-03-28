@@ -6,6 +6,50 @@
 
 using namespace std;
 
+void smallTestCase() {
+  Graph graph;
+
+  std::cout << "Large Test Case (~100 nodes)" << std::endl;
+
+  // Create nodes: "1" to "100"
+  for (int i = 1; i <= 100; i++) {
+    graph.addNode(std::to_string(i));
+  }
+
+  // Create edges:
+  // 1. Ring structure: each node points to the next (with wrap-around)
+  for (int i = 1; i <= 100; i++) {
+    std::string src = std::to_string(i);
+    std::string dest = std::to_string((i % 100) + 1); // Wrap-around
+    graph.addEdge(src, dest);
+  }
+
+  // 2. Additional edges: for each node, add an edge to the node two steps ahead
+  // and three steps ahead
+  for (int i = 1; i <= 100; i++) {
+    std::string src = std::to_string(i);
+    std::string dest2 = std::to_string(((i + 1) % 100) + 1);
+    std::string dest3 = std::to_string(((i + 2) % 100) + 1);
+    graph.addEdge(src, dest2);
+    graph.addEdge(src, dest3);
+  }
+
+  // 3. More random-like cross links: for every 10th node, add extra edges to
+  // simulate shortcuts
+  for (int i = 1; i <= 100; i += 10) {
+    std::string src = std::to_string(i);
+    // Connect node i to nodes (i+15) and (i+20) (with wrap-around)
+    std::string dest15 = std::to_string(((i + 14) % 100) + 1);
+    std::string dest20 = std::to_string(((i + 19) % 100) + 1);
+    graph.addEdge(src, dest15);
+    graph.addEdge(src, dest20);
+  }
+
+  // Calculate PageRank
+  PageRank pagerank;
+  pagerank.computePageRank(graph, 0.85, 1e-6, 100);
+}
+
 // A helper function to compare two maps (expected vs computed)
 // with a tolerance for floating-point differences.
 bool compareMaps(const map<int, double> &expected,
@@ -162,5 +206,8 @@ int main() {
   PageRank pagerank5;
 
   pagerank5.computePageRank(graph5, 0.85, 1e-5, 100);
+
+  smallTestCase();
+
   return 0;
 }
