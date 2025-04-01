@@ -1,10 +1,12 @@
 #include "../includes/graph.h"
 #include "../includes/pagerank.h"
+#include <chrono>
 #include <csignal>
 #include <iostream>
 #include <map>
 
 using namespace std;
+using namespace std::chrono;
 
 void smallTestCase() {
   Graph graph;
@@ -47,7 +49,51 @@ void smallTestCase() {
 
   // Calculate PageRank
   PageRank pagerank;
+
+  auto first_start = high_resolution_clock::now();
+
+  std::unordered_map<std::string, double> res =
+      pagerank.computePageRank(graph, 0.85, 1e-6, 100);
+
+  auto first_stop = high_resolution_clock::now();
+
+  auto first_duration = duration_cast<microseconds>(first_stop - first_start);
+
+  // Create more edges:
+  for (int i = 1; i <= 500; i++) {
+    std::string src = std::to_string(i);
+    std::string dest = std::to_string((i % 100) + 1); // Wrap-around
+    graph.addEdge(src, dest);
+  }
+
+  auto second_start = high_resolution_clock::now();
+
+  pagerank.computePageRank(graph, 0.85, 1e-6, 100, -1, 0.03, res);
+
+  auto second_stop = high_resolution_clock::now();
+
+  auto second_duration =
+      duration_cast<microseconds>(second_stop - second_start);
+
+  auto third_start = high_resolution_clock::now();
+
   pagerank.computePageRank(graph, 0.85, 1e-6, 100);
+
+  auto third_stop = high_resolution_clock::now();
+
+  auto third_duration = duration_cast<microseconds>(third_stop - third_start);
+
+  cout << "\n\n\n\nTime difference to run the third "
+          "computePageRank() function: "
+       << third_duration.count() << " ms\n";
+
+  cout << "\n\n\n\nTime difference to run the second "
+          "computePageRank() function: "
+       << second_duration.count() << " ms\n";
+
+  cout << "\n\n\n\nTime difference to run the first and the second "
+          "computePageRank() function: "
+       << first_duration.count() - second_duration.count() << " ms\n";
 }
 
 // A helper function to compare two maps (expected vs computed)

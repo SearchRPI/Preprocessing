@@ -41,10 +41,11 @@ std::unordered_map<std::string, double> PageRank::computePageRank(
   // vector (or in case of new nodes), fall back to uniform.
   std::unordered_map<std::string, double> pageRank;
   for (const std::string &node : nodeList) {
-    if (initialPageRank.find(node) != initialPageRank.end()) {
+    if (!initialPageRank.empty() &&
+        initialPageRank.find(node) != initialPageRank.end()) {
       pageRank[node] = initialPageRank.at(node);
     } else {
-      pageRank[node] = 1.0 / N;
+      pageRank[node] = e;
     }
   }
 
