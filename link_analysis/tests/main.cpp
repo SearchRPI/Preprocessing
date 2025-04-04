@@ -8,10 +8,10 @@
 using namespace std;
 using namespace std::chrono;
 
-void smallTestCase() {
+void verySmallTestCase() {
   Graph graph;
 
-  std::cout << "Large Test Case (~100 nodes)" << std::endl;
+  std::cout << "Very Small Test Case (~100 nodes)" << std::endl;
 
   // Create nodes: "1" to "100"
   for (int i = 1; i <= 100; i++) {
@@ -96,6 +96,192 @@ void smallTestCase() {
        << first_duration.count() - second_duration.count() << " ms\n";
 }
 
+void smallTestCase() {
+  Graph graph;
+
+  std::cout << "Small Test Case (~10,000 nodes)" << std::endl;
+
+  // Create nodes: "1" to "10000"
+  for (int i = 1; i <= 10000; i++) {
+    graph.addNode(std::to_string(i));
+  }
+
+  // Create edges:
+  // 1. Ring structure: each node points to the next (with wrap-around)
+  for (int i = 1; i <= 10000; i++) {
+    std::string src = std::to_string(i);
+    std::string dest = std::to_string((i % 100) + 1); // Wrap-around
+    graph.addEdge(src, dest);
+  }
+
+  // 2. Additional edges: for each node, add an edge to the node two steps ahead
+  // and three steps ahead
+  for (int i = 1; i <= 10000; i++) {
+    std::string src = std::to_string(i);
+    std::string dest2 = std::to_string(((i + 1) % 100) + 1);
+    std::string dest3 = std::to_string(((i + 2) % 100) + 1);
+    graph.addEdge(src, dest2);
+    graph.addEdge(src, dest3);
+  }
+
+  // 3. More random-like cross links: for every 10th node, add extra edges to
+  // simulate shortcuts
+  for (int i = 1; i <= 10000; i += 10) {
+    std::string src = std::to_string(i);
+    // Connect node i to nodes (i+15) and (i+20) (with wrap-around)
+    std::string dest15 = std::to_string(((i + 14) % 100) + 1);
+    std::string dest20 = std::to_string(((i + 19) % 100) + 1);
+    graph.addEdge(src, dest15);
+    graph.addEdge(src, dest20);
+  }
+
+  // Calculate PageRank
+  PageRank pagerank;
+
+  auto first_start = high_resolution_clock::now();
+
+  std::unordered_map<std::string, double> res =
+      pagerank.computePageRank(graph, 0.85, 1e-6, 100);
+
+  auto first_stop = high_resolution_clock::now();
+
+  auto first_duration = duration_cast<microseconds>(first_stop - first_start);
+
+  // Create more edges:
+  for (int i = 1; i <= 5000; i++) {
+    std::string src = std::to_string(i);
+    std::string dest = std::to_string((i % 100) + 1); // Wrap-around
+    graph.addEdge(src, dest);
+  }
+
+  // Optimized
+
+  auto second_start = high_resolution_clock::now();
+
+  pagerank.computePageRank(graph, 0.85, 1e-6, 100, -1, 0.03, res);
+
+  auto second_stop = high_resolution_clock::now();
+
+  auto second_duration =
+      duration_cast<microseconds>(second_stop - second_start);
+
+  // Unoptimized
+
+  auto third_start = high_resolution_clock::now();
+
+  pagerank.computePageRank(graph, 0.85, 1e-6, 100);
+
+  auto third_stop = high_resolution_clock::now();
+
+  auto third_duration = duration_cast<microseconds>(third_stop - third_start);
+
+  cout << "\n\n\n\nTime to run the third (unoptimized) "
+          "computePageRank() function: "
+       << third_duration.count() << " ms\n";
+
+  cout << "\n\n\n\nTime to run the second (optimized) "
+          "computePageRank() function: "
+       << second_duration.count() << " ms\n";
+
+  // Second duration is supposed to be faster
+  cout << "\n\n\n\nTime difference to run the unoptimized v.s. optimized "
+          "computePageRank() function: "
+       << third_duration.count() - second_duration.count() << " ms\n";
+}
+
+void mediumTestCase() {
+  Graph graph;
+
+  std::cout << "Medium Test Case (~10,000,000 nodes)" << std::endl;
+
+  // Create nodes: "1" to "10,000,000"
+  for (int i = 1; i <= 100000000; i++) {
+    graph.addNode(std::to_string(i));
+  }
+
+  // Create edges:
+  // 1. Ring structure: each node points to the next (with wrap-around)
+  for (int i = 1; i <= 100000000; i++) {
+    std::string src = std::to_string(i);
+    std::string dest = std::to_string((i % 100) + 1); // Wrap-around
+    graph.addEdge(src, dest);
+  }
+
+  // 2. Additional edges: for each node, add an edge to the node two steps ahead
+  // and three steps ahead
+  for (int i = 1; i <= 100000000; i++) {
+    std::string src = std::to_string(i);
+    std::string dest2 = std::to_string(((i + 1) % 100) + 1);
+    std::string dest3 = std::to_string(((i + 2) % 100) + 1);
+    graph.addEdge(src, dest2);
+    graph.addEdge(src, dest3);
+  }
+
+  // 3. More random-like cross links: for every 10th node, add extra edges to
+  // simulate shortcuts
+  for (int i = 1; i <= 100000000; i += 10) {
+    std::string src = std::to_string(i);
+    // Connect node i to nodes (i+15) and (i+20) (with wrap-around)
+    std::string dest15 = std::to_string(((i + 14) % 100) + 1);
+    std::string dest20 = std::to_string(((i + 19) % 100) + 1);
+    graph.addEdge(src, dest15);
+    graph.addEdge(src, dest20);
+  }
+
+  // Calculate PageRank
+  PageRank pagerank;
+
+  auto first_start = high_resolution_clock::now();
+
+  std::unordered_map<std::string, double> res =
+      pagerank.computePageRank(graph, 0.85, 1e-6, 100);
+
+  auto first_stop = high_resolution_clock::now();
+
+  auto first_duration = duration_cast<microseconds>(first_stop - first_start);
+
+  // Create more edges:
+  for (int i = 1; i <= 500000; i++) {
+    std::string src = std::to_string(i);
+    std::string dest = std::to_string((i % 100) + 1); // Wrap-around
+    graph.addEdge(src, dest);
+  }
+
+  // Optimized
+
+  auto second_start = high_resolution_clock::now();
+
+  pagerank.computePageRank(graph, 0.85, 1e-6, 100, -1, 0.03, res);
+
+  auto second_stop = high_resolution_clock::now();
+
+  auto second_duration =
+      duration_cast<microseconds>(second_stop - second_start);
+
+  // Unoptimized
+
+  auto third_start = high_resolution_clock::now();
+
+  pagerank.computePageRank(graph, 0.85, 1e-6, 100);
+
+  auto third_stop = high_resolution_clock::now();
+
+  auto third_duration = duration_cast<microseconds>(third_stop - third_start);
+
+  cout << "\n\n\n\nTime to run the third (unoptimized) "
+          "computePageRank() function: "
+       << third_duration.count() << " ms\n";
+
+  cout << "\n\n\n\nTime to run the second (optimized) "
+          "computePageRank() function: "
+       << second_duration.count() << " ms\n";
+
+  // Second duration is supposed to be faster
+  cout << "\n\n\n\nTime difference to run the unoptimized v.s. optimized "
+          "computePageRank() function: "
+       << third_duration.count() - second_duration.count() << " ms\n";
+}
+
 // A helper function to compare two maps (expected vs computed)
 // with a tolerance for floating-point differences.
 bool compareMaps(const map<int, double> &expected,
@@ -113,7 +299,7 @@ bool compareMaps(const map<int, double> &expected,
   return true;
 }
 
-int main() {
+void otherVerySmallTestCases() {
   /**
    *
    * NetworkX Test Case
@@ -252,8 +438,17 @@ int main() {
   PageRank pagerank5;
 
   pagerank5.computePageRank(graph5, 0.85, 1e-5, 100);
+}
+
+int main() {
+  // otherVerySmallTestCases();
+
+  // verySmallTestCase();
 
   smallTestCase();
+
+  // Don't think it will be possible to run in a short amount of time
+  // mediumTestCase();
 
   return 0;
 }

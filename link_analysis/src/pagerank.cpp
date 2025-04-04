@@ -129,11 +129,11 @@ std::unordered_map<std::string, double> PageRank::computePageRank(
   // TODO: Update the node's page rank at the very end.
 
   // Print final PageRank scores.
-  for (const std::string &node : nodeList) {
-    std::cout << "PageRank for node " << node << ": " << pageRank[node]
-              << std::endl;
-  }
-  std::cout << "\n";
+  // for (const std::string &node : nodeList) {
+  //   std::cout << "PageRank for node " << node << ": " << pageRank[node]
+  //             << std::endl;
+  // }
+  // std::cout << "\n";
 
   return pageRank;
 }
